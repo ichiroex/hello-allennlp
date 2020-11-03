@@ -22,12 +22,14 @@ from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
 from allennlp.training.optimizers import AdamOptimizer
 from allennlp.training import GradientDescentTrainer
 from allennlp.training import Checkpointer
+from allennlp.training.util import evaluate
 
 from lib.tokenizer import MecabTokenizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--train_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--valid_data", required=True, type=str, help="path to parallel corpus")
+parser.add_argument("--test_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--serialization_dir", type=str, default="./model", help="path to save a model")
 parser.add_argument("--beam_size", type=int, default=1, help="beam size")
 parser.add_argument("--cuda", action="store_true", help="use gpu")
@@ -96,7 +98,7 @@ if args.cuda:
 
 # オプティマイザの作成
 optimizer = AdamOptimizer(model.named_parameters())
-checkpointer = Checkpointer(serialization_dir=args.serialization_dir, num_serialized_models_to_keep=5)
+checkpointer = Checkpointer(serialization_dir=args.serialization_dir, num_serialized_models_to_keep=None)
 
 # トレイナの作成
 trainer = GradientDescentTrainer(
@@ -110,3 +112,10 @@ trainer = GradientDescentTrainer(
 
 metrics = trainer.train()
 pprint.pprint(metrics)
+
+# Now we can evaluate the model on a new dataset.
+test_dataset = reader.read(args.test_data)
+test_dataset.index_with(model.vocab)
+test_loader = PyTorchDataLoader(test_dataset, batch_size=32, shuffle=False)
+results = evaluate(model, test_loader)
+pprint.pprint(results)

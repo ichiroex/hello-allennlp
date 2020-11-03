@@ -8,13 +8,14 @@ from bs4 import BeautifulSoup
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--data", type=str, required=True)
 parser.add_argument("--data_size", type=int, default=10000)
 parser.add_argument("--data_name", type=str, default=None)
 args = parser.parse_args()
 
 # データセットをファイルから読み込む
 data = []
-with open("data/jparacrawl_en-ja/en-ja.bicleaner05.txt") as f:
+with open(args.data) as f:
     for line in f:
         url, score, source, target = line.strip().split("\t")
         source = source.replace("\n", " ").replace("\t", " ")

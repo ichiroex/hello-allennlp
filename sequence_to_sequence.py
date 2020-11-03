@@ -23,6 +23,7 @@ from allennlp.training.optimizers import AdamOptimizer
 from allennlp.training import GradientDescentTrainer
 from allennlp.training import Checkpointer
 from allennlp.training.util import evaluate
+from allennlp.training.learning_rate_schedulers import LinearWithWarmup
 
 from lib.tokenizer import MecabTokenizer
 
@@ -32,6 +33,7 @@ parser.add_argument("--valid_data", required=True, type=str, help="path to paral
 parser.add_argument("--test_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--serialization_dir", type=str, default="./model", help="path to save a model")
 parser.add_argument("--beam_size", type=int, default=1, help="beam size")
+parser.add_argument("--num_epochs", type=int, default=10, help="number of epochs")
 parser.add_argument("--cuda", action="store_true", help="use gpu")
 args = parser.parse_args()
 
@@ -53,6 +55,7 @@ reader = Seq2SeqDatasetReader(
 )
 train_dataset = reader.read(args.train_data)
 validation_dataset = reader.read(args.valid_data)
+test_dataset = reader.read(args.test_data)
 
 # 語彙の作成
 vocab = Vocabulary.from_instances(train_dataset + validation_dataset)
@@ -99,22 +102,22 @@ if args.cuda:
 # オプティマイザの作成
 optimizer = AdamOptimizer(model.named_parameters())
 checkpointer = Checkpointer(serialization_dir=args.serialization_dir, num_serialized_models_to_keep=None)
-
+learning_rate_scheduler = LinearWithWarmup(optimizer=optimizer, num_epochs=args.num_epochs, num_steps_per_epoch=len(train_loader), warmup_steps=4000)
 # トレイナの作成
 trainer = GradientDescentTrainer(
     model=model,
     optimizer=optimizer,
     data_loader=train_loader,
     validation_data_loader=validation_loader,
-    num_epochs=10,
-    checkpointer=checkpointer,
-    patience=3)
+    validation_metric="-loss",
+    num_epochs=args.num_epochs,
+    learning_rate_scheduler=learning_rate_scheduler,
+    checkpointer=checkpointer)
 
 metrics = trainer.train()
 pprint.pprint(metrics)
 
 # Now we can evaluate the model on a new dataset.
-test_dataset = reader.read(args.test_data)
 test_dataset.index_with(model.vocab)
 test_loader = PyTorchDataLoader(test_dataset, batch_size=32, shuffle=False)
 results = evaluate(model, test_loader)

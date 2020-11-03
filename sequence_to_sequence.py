@@ -27,6 +27,7 @@ from lib.tokenizer import MecabTokenizer
 parser = argparse.ArgumentParser()
 parser.add_argument("--train_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--valid_data", required=True, type=str, help="path to parallel corpus")
+parser.add_argument("--cuda", action="store_true", help="use gpu")
 args = parser.parse_args()
 
 # 乱数シードの指定
@@ -86,7 +87,8 @@ train_loader = PyTorchDataLoader(train_dataset, batch_size=32, shuffle=True)
 validation_loader = PyTorchDataLoader(validation_dataset, batch_size=32, shuffle=False)
 
 # GPU上にモデルをコピー
-# model = model.cuda()
+if args.cuda:
+    model = model.cuda()
 
 # オプティマイザの作成
 optimizer = AdamOptimizer(model.named_parameters())

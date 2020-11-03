@@ -65,14 +65,14 @@ target_embedding = Embedding(num_embeddings=vocab.get_vocab_size(namespace="targ
 # Sequence-to-Sequence Model (LSTM, Transformer)
 encoder = PytorchTransformer(
     input_dim=source_text_embedder.get_output_dim(), 
-    feedforward_hidden_dim=1024, 
-    num_layers=6, 
+    feedforward_hidden_dim=512, 
+    num_layers=4, 
     num_attention_heads=8)
 decoder_net = StackedSelfAttentionDecoderNet(
     decoding_dim=target_embedding.get_output_dim(),
     target_embedding_dim=target_embedding.get_output_dim(),
-    feedforward_hidden_dim=1024, 
-    num_layers=6,
+    feedforward_hidden_dim=512, 
+    num_layers=4,
     num_attention_heads=8)
 decoder = AutoRegressiveSeqDecoder(
     vocab=vocab, 

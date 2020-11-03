@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--train_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--valid_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--serialization_dir", type=str, default="./model", help="path to save a model")
+parser.add_argument("--beam_size", type=int, default=1, help="beam size")
 parser.add_argument("--cuda", action="store_true", help="use gpu")
 args = parser.parse_args()
 
@@ -77,8 +78,9 @@ decoder_net = StackedSelfAttentionDecoderNet(
 decoder = AutoRegressiveSeqDecoder(
     vocab=vocab, 
     decoder_net=decoder_net, 
-    max_decoding_steps=512, 
+    max_decoding_steps=128, 
     target_embedder=target_embedding,
+    beam_size=args.beam_size,
     target_namespace='target_tokens')
 model = ComposedSeq2Seq(
     vocab=vocab, source_text_embedder=source_text_embedder,

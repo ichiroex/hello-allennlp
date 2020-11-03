@@ -21,12 +21,14 @@ from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
 
 from allennlp.training.optimizers import AdamOptimizer
 from allennlp.training import GradientDescentTrainer
+from allennlp.training import Checkpointer
 
 from lib.tokenizer import MecabTokenizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--train_data", required=True, type=str, help="path to parallel corpus")
 parser.add_argument("--valid_data", required=True, type=str, help="path to parallel corpus")
+parser.add_argument("--serialization_dir", type=str, default="./model", help="path to save a model")
 parser.add_argument("--cuda", action="store_true", help="use gpu")
 args = parser.parse_args()
 
@@ -92,6 +94,7 @@ if args.cuda:
 
 # オプティマイザの作成
 optimizer = AdamOptimizer(model.named_parameters())
+checkpointer = Checkpointer(serialization_dir=args.serialization_dir, num_serialized_models_to_keep=5)
 
 # トレイナの作成
 trainer = GradientDescentTrainer(
@@ -100,6 +103,7 @@ trainer = GradientDescentTrainer(
     data_loader=train_loader,
     validation_data_loader=validation_loader,
     num_epochs=10,
+    checkpointer=checkpointer,
     patience=3)
 
 metrics = trainer.train()

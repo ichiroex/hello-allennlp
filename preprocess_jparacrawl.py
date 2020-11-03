@@ -26,9 +26,9 @@ random.seed(1)
 random.shuffle(data)
 data = data[:args.data_size]
 
-# データセットの80%を訓練データ、10%を検証データ、10%をテストデータとして用いる
+# データセットの1000件を検証データ、1000件をテストデータ、それ以外を訓練データとして用いる
 split_data = {}
-eval_size = int(len(data) * 0.1)
+eval_size = 1000
 split_data["test"] = data[:eval_size]
 split_data["validation"] = data[eval_size:eval_size * 2]
 split_data["train"] = data[eval_size * 2:]

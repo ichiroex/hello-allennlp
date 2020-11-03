@@ -5,6 +5,12 @@ import random
 import sys
 import warnings
 from bs4 import BeautifulSoup
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--data_size", type=int, default=10000)
+parser.add_argument("--data_name", type=str, default=None)
+args = parser.parse_args()
 
 # データセットをファイルから読み込む
 data = []
@@ -18,7 +24,7 @@ with open("data/jparacrawl_en-ja/en-ja.bicleaner05.txt") as f:
 # データセットから10,000件をランダムに抽出する
 random.seed(1)
 random.shuffle(data)
-data = data[:10000]
+data = data[:args.data_size]
 
 # データセットの80%を訓練データ、10%を検証データ、10%をテストデータとして用いる
 split_data = {}
@@ -29,7 +35,11 @@ split_data["train"] = data[eval_size * 2:]
 
 # JSON Lines形式でデータセットを書き込む
 for fold in ("train", "validation", "test"):
-    out_file = os.path.join("data/jparacrawl_en-ja", "jparacrawl_en-ja_{}.tsv".format(fold))
+    if args.data_name is None:
+        out_file = os.path.join("data/jparacrawl_en-ja", "jparacrawl_en-ja_{}.tsv".format(fold))
+    else:
+        out_file = os.path.join("data/jparacrawl_en-ja", "jparacrawl_en-ja_{}_{}.tsv".format(args.data_name, fold))
+
     with open(out_file, mode="w") as f:
         for item in split_data[fold]:
             f.write("\t".join(item) + "\n")

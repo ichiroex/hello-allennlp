@@ -4,7 +4,6 @@ import os
 import random
 import sys
 import warnings
-from bs4 import BeautifulSoup
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -37,9 +36,9 @@ split_data["train"] = data[eval_size * 2:]
 # JSON Lines形式でデータセットを書き込む
 for fold in ("train", "validation", "test"):
     if args.data_name is None:
-        out_file = os.path.join("data/jparacrawl_en-ja", "jparacrawl_en-ja_{}.tsv".format(fold))
+        out_file = os.path.join(os.path.dirname(args.data), "jparacrawl_en-ja_{}.tsv".format(fold))
     else:
-        out_file = os.path.join("data/jparacrawl_en-ja", "jparacrawl_en-ja_{}_{}.tsv".format(args.data_name, fold))
+        out_file = os.path.join(os.path.dirname(args.data), "jparacrawl_en-ja_{}_{}.tsv".format(args.data_name, fold))
 
     with open(out_file, mode="w") as f:
         for item in split_data[fold]:
